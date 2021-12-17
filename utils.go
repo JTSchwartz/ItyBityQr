@@ -28,7 +28,6 @@ func ParseHexColor(s string) (c color.RGBA, err error) {
 }
 
 func BuildQrConfig(url string, size int, colors ...color.Color) QrConfig {
-	fmt.Println(colors)
 	if len(colors) != 2 {
 		return QrConfig{url, size, color.White, color.Black}
 	}

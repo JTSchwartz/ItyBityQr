@@ -19,7 +19,7 @@ type QrConfig struct {
 	fg   color.Color
 }
 
-func QrGenerator(w http.ResponseWriter, r *http.Request) {
+func ItyBityQr(w http.ResponseWriter, r *http.Request) {
 	config, err, genErr := ParseQuery(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
