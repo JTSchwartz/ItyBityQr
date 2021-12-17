@@ -6,7 +6,6 @@ import (
 	"image/color"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/skip2/go-qrcode"
@@ -26,23 +25,17 @@ func ItyBityQr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if *genErr == "" {
+	if genErr != nil && *genErr == "" {
 		w.Header().Set("GenerationError", *genErr)
 	}
 
-	err = qrcode.WriteColorFile(config.url, qrcode.Medium, config.size, config.bg, config.fg, "qr.png")
+	png, err := qrcode.Encode(config.url, qrcode.Medium, config.size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusFailedDependency)
 		return
 	}
 
-	encoded, err := StreamImageFile()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = io.Copy(w, encoded)
+	_, err = io.Copy(w, bytes.NewBuffer(png))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -63,64 +56,7 @@ func ParseQuery(r *http.Request) (*QrConfig, error, *string) {
 		return &config, errors.New("Url Param 'size' must be set"), nil
 	}
 
-	bg := query.Get("bg")
-	fg := query.Get("fg")
-
-	if bg != "" && fg != "" {
-		bg, fg, genErr := ParseColors(bg, fg)
-		config := BuildQrConfig(url, size, bg, fg)
-
-		return &config, nil, &genErr
-	}
-
 	config = BuildQrConfig(url, size)
 
 	return &config, nil, nil
-}
-
-func ParseColors(bgHex string, fgHex string) (bgColor color.Color, fgColor color.Color, err string) {
-	bgColor, bgErr := ParseHexColor(bgHex)
-	fgColor, fgErr := ParseHexColor(fgHex)
-
-	if bgErr != nil && fgErr != nil {
-		err = "Unable to parse background and foreground colors"
-		bgColor = color.White
-		fgColor = color.Black
-	} else if bgErr != nil {
-		err = "Unable to parse background color"
-		bgColor = ValidateUniqueColors(fgColor, color.White, color.Black)
-	} else if fgErr != nil {
-		err = "Unable to parse background color"
-		fgColor = ValidateUniqueColors(bgColor, color.Black, color.White)
-	} else if bgColor == fgColor {
-		if fgColor == color.Black {
-			fgColor = color.White
-		}
-		fgColor = color.Black
-	}
-
-	return
-}
-
-func StreamImageFile() (stream *bytes.Buffer, err error) {
-	file, err := os.Open("qr.png")
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	fileinfo, err := file.Stat()
-	if err != nil {
-		return
-	}
-
-	buffer := make([]byte, fileinfo.Size())
-
-	_, err = file.Read(buffer)
-	if err != nil {
-		return
-	}
-
-	stream = bytes.NewBuffer(buffer)
-	return
 }
