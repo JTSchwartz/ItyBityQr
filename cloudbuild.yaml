@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+    - gcloud
+    - functions
+    - deploy
+    - ItyBityQr
+    - --region=us-central1
+    - --trigger-http
+    - --allow-unauthenticated
+    - --trigger-http
+    - --runtime=go116
+    id: 'Deploy'
