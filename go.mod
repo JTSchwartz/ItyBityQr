@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.5.2
+	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 )
 
